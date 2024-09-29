@@ -22,6 +22,7 @@ Data_Sugar = [0.460,0.376,0.264,0.318,0.215,0.237,0.149,0.211,0.091,0.267,0.057,
 
 Data_GoodOrBad = [1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0]
 
+TextureName = ['Colour','Root','Sound','Texture','Umbilicus','Touch','Density','Sugar']
 class Watermelon :
     def __init__(self) -> None:
         self.Colour = None
@@ -34,7 +35,7 @@ class Watermelon :
         self.Sugar = None
         self.GorB = None
         self.Num = None
-    
+        self.TextureList = [self.Colour,self.Root,self.Sound,self.Texture,self.Umbilicus,self.Touch,self.Density,self.Sugar]
     def Set_Data_Colour(self,a):
         self.Colour = a
     def Set_Data_Root(self,a):
@@ -49,15 +50,64 @@ class Watermelon :
         self.Touch = a
     def Set_Data_Density(self,a):
         self.Density = a
+    def Set_Data_Sugar(self,a):
+        self.Sugar = a
+    def Set_Data_GorB(self,a):
+        self.GorB = a
+    def Set_Data_Num(self,a):
+        self.Num = a
+
+Data = []
+Data_Num = 17
+for i in range(Data_Num):
+    Data.append(Watermelon())
+    Data[i].Set_Data_Colour(Data_Colour[i])
+    Data[i].Set_Data_Root(Data_Root[i])
+    Data[i].Set_Data_Sound(Data_Sound[i])
+    Data[i].Set_Data_Texture(Data_Texture[i])
+    Data[i].Set_Data_Umbilicus(Data_Umbilicus[i])
+    Data[i].Set_Data_Touch(Data_Touch[i])
+    Data[i].Set_Data_Density(Data_Density[i])
+    Data[i].Set_Data_Sugar(Data_Sugar[i])
+    Data[i].Set_Data_GorB(Data_GoodOrBad[i])
+    Data[i].Set_Data_Num(i)
+
+attributes = vars(Data[1])
+for attribute,value in attributes.items():
+    print(attribute,"=",value)
+
+tree = Tree()
+
+def Cal_Gain_Depth(Data,BestAttribute,DataNum,TextureNum,TextureName):
+    temp = []
+    for i in range(DataNum):
+        temp.append(Data[i].GorB)
+    Ent_D = -(Counter(temp)[1]/len(temp)*math.log2(Counter(temp)[1]/len(temp)) + Counter(temp)[0]/len(temp)*math.log2(Counter(temp)[0]/len(temp)))
+    if Ent_D == 0 and BestAttribute == None:
+        print('Wrong Data Set!!')
+        return
+    elif Ent_D == 0 and BestAttribute != None:
+        tree.create_node(tag='child',identifier='leave',data=BestAttribute)
+        return
+    elif Ent_D > 0:
+        Gain = []
+        for i in range(TextureNum):
+            for j in range(DataNum):
+                temp[j] = Data[j].TextureList[i]
+            Gain.append(Cal_Gain[temp])
+        Max_Gain_Num = Gain.index(max(Gain))
+        tree.create_node(tag='parent',identifier='root',data = TextureName[Max_Gain_Num])
+        for i in range(Data_Num):
+            temp[i] = Data[j].TextureList[Max_Gain_Num]
+        set1 = set(temp)
+        for i in range(len(set1)):
+            Data_temp  = []
+            for j in range(len(temp)):
+                if temp[j] == set[i]:
+                    Data_temp.append(temp[j])
+            Cal_Gain_Depth(Data_temp,TextureName[Max_Gain_Num],len(Data_temp),TextureNum,TextureName)
+            
     
-
-
-
-
-
-
-
-
 
 p1 = Counter(Data_GoodOrBad)[1]/17
 p2 = Counter(Data_GoodOrBad)[0]/17
@@ -182,17 +232,9 @@ def Cal_Gain(a):
         Gain = Ent_D - p1*Ent_D1 - p2* Ent_D2 - p3*Ent_D3         
     print(Gain)
     return Gain
-Data = [Data_Colour,Data_Root,Data_Sound,Data_Texture,Data_Umbilicus,Data_Touch,Data_Density]
+
 G = []
 
 
-tree = Tree()
-Data_Num = range(17)
-while len(Data_Num) != 0:
-    for  i in range(len(Data)):
-        G.append (Cal_Gain(Data[i]))
-    j = sum(G)
-    tree.create_node("node[i]","ss")
-    
     
 
