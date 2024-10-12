@@ -22,7 +22,7 @@ Data_Sugar = [0.460,0.376,0.264,0.318,0.215,0.237,0.149,0.211,0.091,0.267,0.057,
 
 Data_GoodOrBad = [1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0]
 
-TextureName = ['Colour','Root','Sound','Texture','Umbilicus','Touch','Density','Sugar']
+Texture_Name = ['Colour','Root','Sound','Texture','Umbilicus','Touch','Density','Sugar']
 class Watermelon :
     def __init__(self) -> None:
         self.Colour = None
@@ -36,7 +36,7 @@ class Watermelon :
         self.GorB = None
         self.Num = None
         self.TextureList = [self.Colour,self.Root,self.Sound,self.Texture,self.Umbilicus,self.Touch,self.Density,self.Sugar]
-        self.DataType = None
+        self.DataType = [None]*10
     def Set_Data_Colour(self,a):
         self.Colour = a
         if isinstance(a,int):
@@ -107,52 +107,54 @@ for i in range(Data_Num):
 
 tree = Tree()
 
-def Cal_Gain_Depth(Data,BestAttribute,DataNum,TextureNum,TextureName):
+def Cal_Gain_Depth(Data,BestAttribute,DataNum,TextureNum,TextureName,parentid):
     temp = []
-    for i in range(DataNum):
+    for i in range(len(Data)):
         temp.append(Data[i].GorB)
     Ent_D = -(Counter(temp)[1]/len(temp)*math.log2(Counter(temp)[1]/len(temp)) + Counter(temp)[0]/len(temp)*math.log2(Counter(temp)[0]/len(temp)))
     if Ent_D == 0 and BestAttribute == None:
         print('Wrong Data Set!!')
         return
     elif Ent_D == 0 and BestAttribute != None:
-        tree.create_node(tag='child',identifier='leave',data=BestAttribute)
+        if temp[0] == 1:    
+            tree.create_node(tag='good',parent=parentid,data=BestAttribute)
+        else:
+            tree.create_node(tag='bad',parent=parentid,data=BestAttribute)
         return
     elif Ent_D > 0:
-        Gain = []
-        for i in range(TextureNum):
-            for j in range(DataNum):
-                temp[j] = Data[j].TextureList[i]
-            Gain.append(Cal_Gain(temp,Ent_D,Data[0].DataType[i]))
+        Gain = Cal_Gain(Data,Ent_D,TextureNum,DataNum)
         Max_Gain_Num = Gain.index(max(Gain))
-        tree.create_node(tag='parent',identifier='root',data = TextureName[Max_Gain_Num])
-        
+        tree.create_node(tag=TextureName[Max_Gain_Num],id=TextureName[Max_Gain_Num],data = TextureName[Max_Gain_Num])
+        treeid = TextureName[Max_Gain_Num]        
         for i in range(Data_Num):
-            temp[i] = Data[j].TextureList[Max_Gain_Num]
+            temp[i] = Data[i].TextureList[Max_Gain_Num]
         set1 = set(temp)
-        for i in range(len(set1)):
+        set2 = []
+        for every in set1:
+            set2.append(every)
+        for i in range(len(set2)):
             Data_temp  = []
             for j in range(len(temp)):
-                if temp[j] == set[i]:
-                    Data_temp.append(temp[j])
-            Cal_Gain_Depth(Data_temp,TextureName[Max_Gain_Num],len(Data_temp),TextureNum,TextureName)
+                if temp[j] == set2[i]:
+                    Data_temp.append(Data[j])
+            Cal_Gain_Depth(Data_temp,TextureName[Max_Gain_Num],len(Data_temp),TextureNum,TextureName,treeid)
             
-
-Gain_1 = []
 def Cal_Gain(Data,Ent_D,TextureNum,DataNum):
     temp = []
+    Gain_t = []
     for i in range(TextureNum):
-        DataType  = Data[0].DataType[i]
+        Data_Type1 = ''
+        Data_Type1  = Data[0].DataType[i]
         for j in range(DataNum):
-            temp.append(Data[j].TxetureList[i])           
-        if DataType == 'continued':
+            temp.append(Data[j].TextureList[i])           
+        if Data_Type1 == 'continued':
             temp_t = []
             temp_s = []
             temp_s = temp 
             temp_s = sorted(temp_s)
-            for i in range(len(temp_s)-1):
-                temp_t.append((temp_s[i] + temp_s[i+1])/2)
-            for i in range(len(temp_t)):
+            for j in range(len(temp_s)-1):
+                temp_t.append((temp_s[j] + temp_s[j+1])/2)
+            for j in range(len(temp_t)):
                 p1 = 0
                 p2 = 0
                 p1_p = 0
@@ -161,106 +163,68 @@ def Cal_Gain(Data,Ent_D,TextureNum,DataNum):
                 p2_n = 0
                 Ent_Dr1 = 0
                 Ent_Dr2 = 0
-                for j in range(len(temp)):
-                    if temp[j] > temp_t[i] :
+                for k in range(len(temp)):
+                    if temp[k] > temp_t[j] :
                         p1 = p1 + 1
-                        if Data_GoodOrBad[j] == 1:
+                        if Data[k].GorB == 1:
                             p1_p = p1_p + 1
                         else:
                             p1_n = p1_n + 1
                             
                     else :
                         p2 = p2 + 1
-                        if Data_GoodOrBad[j] == 1:
+                        if Data[k].GorB == 1:
                             p2_p = p2_p + 1
                         else:
-                            p2_n = p2_n + 1
-                print(p1_p,p1_n,p2_p,p2_n)           
+                            p2_n = p2_n + 1          
                 p1_p = p1_p/p1
                 p1_n = p1_n/p1
                 p2_p = p2_p/p2
                 p2_n = p2_n/p2
-                p1 = p1/len(a)
-                p2 = p2/len(a)
-                
-                print(p1_p,p1_n,p2_p,p2_n)
-                
+                p1 = p1/len(temp)
+                p2 = p2/len(temp)                
                 if p1_p != 0 and p1_n != 0:
                     Ent_Dr1 = -(p1_p*math.log2(p1_p) + p1_n*math.log2(p1_n))
-                print(Ent_Dr1)
                 if p2_p != 0 and p2_n != 0:
                     Ent_Dr2 = -(p2_p*math.log2(p2_p) + p2_n*math.log2(p2_n))
-                print(Ent_Dr2)
                 Gain_t.append(Ent_D - p1*Ent_Dr1 - p2*Ent_Dr2)
             print(Gain_t)
-            Gain = max(Gain_t)
-                
-            
-        
-        else: 
-            p1 = Counter(a)[1]/17
-            p2 = Counter(a)[2]/17
-            p3 = Counter(a)[3]/17
-            a_1 = []
-            a_2 = []
-            a_3 = []
-            Ent_D3 = 0
-            for i in range(len(a)):
-                if a[i] == 1:
-                    a_1.append(i)
-                elif a[i] == 2:
-                    a_2.append(i)
-                elif a[i] == 3:
-                    a_3.append(i)
-
-            p1_p = 0
-            p1_n = 0
-            for i in range(len(a_1)):
-                if Data_GoodOrBad[a_1[i]] == 1:
-                    p1_p = p1_p + 1
-                else :
-                    p1_n = p1_n + 1
-            p1_p = p1_p/len(a_1)
-            p1_n = p1_n/len(a_1)
-            if p1_p == 0 or p1_n == 0:
-                Ent_D1 = 0
-            else:
-                Ent_D1 = -(p1_p*math.log2(p1_p) + p1_n*math.log2(p1_n))
-    #   print(Ent_D1)
-            p2_p = 0
-            p2_n = 0
-            for i in range(len(a_2)):
-                if Data_GoodOrBad[a_2[i]] == 1:
-                    p2_p = p2_p + 1
-                else :
-                    p2_n = p2_n + 1    
-            p2_p = p2_p/len(a_2)
-            p2_n = p2_n/len(a_2)
-            if p2_p == 0 or p2_n == 0:
-                Ent_D2 = 0
-            else:
-                Ent_D2 = -(p2_p*math.log2(p2_p)+p2_n*math.log2(p2_n))
-    #    print(Ent_D2)
-            if len(a_3) != 0:
-                p3_p = 0
-                p3_n = 0
-                for i in range(len(a_3)):
-                    if Data_GoodOrBad[a_3[i]] == 1:
-                        p3_p = p3_p + 1
-                    else :
-                        p3_n = p3_n + 1    
-                p3_p = p3_p/len(a_3)
-                p3_n = p3_n/len(a_3)
-                if p3_p == 0 or p3_n == 0:
-                    Ent_D3 = 0
+        else:
+            set1 = set(temp)
+            set2 = []
+            for every in set1:
+                set2.append(every)
+            p = []
+            Num_t = []
+            for i in range(len(set1)):
+                Num_t.append(Counter(temp)[set2[i]])
+                p.append(Counter(temp)[set2[i]]/DataNum)
+            Ent_D_t = []
+            for i in range(len(set1)):
+                num_p = 0
+                num_n = 0
+                p1 = 0
+                p2 = 0
+                for j in range(Data_Num):
+                    if temp[j] == set2[i] and Data[j].GorB == 1:
+                        num_p = num_p + 1
+                    elif temp[j] == set2[i] and Data[j].GorB == 0:
+                        num_n = num_n + 1
+                p1 = num_p / Num_t[i]
+                p2 = num_n / Num_t[i]
+                if p1!= 0 and p2!=0:
+                    Ent_D_t.append(-(p1*math.log2(p1)+p2*math.log2(p2)))
                 else:
-                    Ent_D3 = -(p3_p*math.log2(p3_p)+p3_n*math.log2(p3_n))
-    #    print(Ent_D3)
-            Gain = Ent_D - p1*Ent_D1 - p2* Ent_D2 - p3*Ent_D3         
-        print(Gain)
-        return Gain
+                    Ent_D_t.append(0)
+            Gain_temp = Ent_D            
+            for i in range(len(set1)):
+                Gain_temp = Gain_temp -p[i]*Ent_D_t[i]        
+            Gain_t.append(Gain_temp)
+        return Gain_t
 
-G = []
+print(Data[0].DataType[2])
+Cal_Gain_Depth(Data,None,Data_Num,len(Data[0].TextureList),Texture_Name)
+
 
 
     
